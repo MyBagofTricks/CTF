@@ -5,7 +5,6 @@ Testing Gitpages and asciinema.
 ## SETUP
 [![asciicast](https://asciinema.org/a/2F4I6po65cgZlIe8mVosqsswN.png)](https://asciinema.org/a/2F4I6po65cgZlIe8mVosqsswN)
 
-
 ## PHASE 1
 [![asciicast](https://asciinema.org/a/VO9TA5kDRqraDa4qHysMMxB6a.png)](https://asciinema.org/a/VO9TA5kDRqraDa4qHysMMxB6a)
 
@@ -14,4 +13,3 @@ Testing Gitpages and asciinema.
 
 ## PHASE3
 [![asciicast](https://asciinema.org/a/79lBZNEWkzrpe2YkjX3Is26RF.png)](https://asciinema.org/a/79lBZNEWkzrpe2YkjX3Is26RF)
-
