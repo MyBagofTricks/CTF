@@ -19,7 +19,7 @@ declare -a commandList=("git clone https://github.com/tdifg/WebShell.git /opt/Sh
 	"curl -sL https://deb.nodesource.com/setup_10.x -o $BUILD_DIR/setup_10.x")
 
 declare -a aptPackages=("pkg-config sleuthkit ftp vim tor gcc-multilib g++-multilib \
-	golang tmux exiftool socat nmap proxychains socat libzip-dev \
+	golang tmux exiftool socat nmap proxychains socat libzip-dev openssh-server \
 	npm curl python-pip python3-pip ruby strace ltrace atftpd gddrescue") 
 
 
