@@ -13,7 +13,11 @@ declare -a githublist=("https://github.com/tdifg/WebShell.git /opt/WebShell"
         "https://github.com/radare/radare2.git /opt/radare2"
         "https://github.com/rebootuser/LinEnum.git /opt/LinEnum/"
         "https://github.com/MyBagofTricks/vimconfig.git /root/.vim"
-	)
+)
+
+declare -a aptPackages=("gobuster ftp tor gcc-multilib g++-multilib golang tmux \
+	exiftool ncat strace ltrace libreoffice gimp"
+)
 
 # Default to quiet output. Add -v for verbose
 verbosity='&>/dev/null'
@@ -30,18 +34,10 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 i=0 
-tput sc 
-while fuser /var/lib/dpkg/lock >/dev/null; do
-     case $(($i % 4)) in
-         0 ) j="-" ;;
-         1 ) j="\\" ;;
-         2 ) j="|" ;;
-         3 ) j="/" ;;
-     esac
-     tput rc
-     echo -en "\r[$j] Waiting for apt-get lock..." 
-     sleep 0.5
-     ((i++)) 
+while fuser /var/lib/dpkg/lock &>/dev/null; do
+    echo -ne "\r[!] Waiting for apt lock. If this persists, try rebooting. $i seconds..."
+    sleep 1
+    ((i++)) 
 done
 
 eval apt-get update $verbosity
@@ -49,14 +45,17 @@ if !(which git &>/dev/null); then
     eval apt-get install git -y $verbosity
 fi
 
-eval apt-get install gobuster ftp tor gcc-multilib g++-multilib golang tmux \
-	exiftool ncat strace ltrace libreoffice gimp  -y "${verbosity}" & 
-
 for url in "${githublist[@]}"; do
 	eval git clone ${url} $verbosity &
 done
 
-eval curl -L https://github.com/radareorg/cutter/releases/download/v1.7.2/Cutter-v1.7.2-x86_64.Linux.AppImage > ~/Documents/Cutter-v1.7.2-x86_64.Linux.AppImage $verbosity &
+# Install packages one by one in case a package changes names
+echo "[ ] Installing main packages and cloning repos. This may take around 10 minutes..."
+for package in ${aptPackages[@]}; do
+	eval apt-get install ${package} -y $verbosity
+done
+
+eval curl -L https://github.com/radareorg/cutter/releases/download/v1.7.2/Cutter-v1.7.2-x86_64.Linux.AppImage > $HOME/Documents/Cutter-v1.7.2-x86_64.Linux.AppImage $verbosity &
 
 echo "[ ] Installing packages and cloning repos. This may around 5 minutes..."
 wait
@@ -67,14 +66,14 @@ cd /opt/radare2
 echo "[ ] Installing radare2 from source..."
 eval sys/install.sh $verbosity & 
 
-rm ~/.vimrc 2>/dev/null 
-ln -s ~/.vim/.vimrc ~/.vimrc
-rm ~/.tmux.conf 2>/dev/null
-ln -s ~/.vim/.tmux.conf ~/.tmux.conf
+rm $HOME/.vimrc 2>/dev/null 
+ln -s $HOME/.vim/.vimrc $HOME/.vimrc
+rm $HOME/.tmux.conf 2>/dev/null
+ln -s $HOME/.vim/.tmux.conf $HOME/.tmux.conf
 vim +PlugUpdate +qall
 
 ### Settings & tweaks
-echo "alias ll='ls -alh'" >> ~/.bashrc
+echo "alias ll='ls -alh'" >> $HOME/.bashrc
 
 # Uncomment this section and add your key if you want to wipe and replace existing settings
 #rm -rf ~/.ssh
