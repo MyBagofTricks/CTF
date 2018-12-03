@@ -18,10 +18,10 @@ declare -a commandList=("git clone https://github.com/tdifg/WebShell.git /opt/Sh
 	"curl -s https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb -o $BUILD_DIR/msfinstall"
 	"curl -sL https://deb.nodesource.com/setup_10.x -o $BUILD_DIR/setup_10.x")
 
-declare -a aptPackages=("pkg-config sleuthkit ftp vim tor gcc-multilib g++-multilib \
-	golang tmux exiftool socat nmap proxychains socat libzip-dev openssh-server \
-	npm curl python-pip python3-pip ruby strace ltrace atftpd gddrescue") 
-
+declare -a aptPackages=("pkg-config sleuthkit ftp vim tor gcc-multilib \
+	g++-multilib golang tmux exiftool socat nmap proxychains socat \
+	libzip-dev openssh-server npm curl python-pip python3-pip ruby \
+	openssh-server strace ltrace atftpd gddrescue gdb") 
 
 # Bail out if not run as root
 if [[ $EUID -ne 0 ]]; then
