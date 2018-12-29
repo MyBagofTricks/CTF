@@ -16,7 +16,7 @@ declare -a githublist=("https://github.com/tdifg/WebShell.git /opt/WebShell"
 )
 
 declare -a aptPackages=("gobuster ftp tor gcc-multilib g++-multilib golang tmux \
-	exiftool ncat strace ltrace libreoffice gimp"
+	exiftool ncat strace ltrace libreoffice gimp nfs-common"
 )
 
 # Default to quiet output. Add -v for verbose
