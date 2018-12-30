@@ -1,14 +1,19 @@
 #!/bin/bash
+
+# Prevent dialgs from stopping installation
+export DEBIAN_FRONTEND=noninteractive
+
 # Basic Kali build script to add key utilities and tweaks
 echo "*** Starting Custom Kali build script. Use -v for verbose output ***"
 
 # Add git packages here
 declare -a githublist=("https://github.com/tdifg/WebShell.git /opt/WebShell"
-	"https://github.com/FuzzySecurity/PowerShell-Suite /opt/PowerShell"
-	"https://github.com/samratashok/nishang /opt/nishang"
-	"https://github.com/411Hall/JAWS /opt/JAWS"
-        "https://github.com/PowerShellMafia/PowerSploit /opt/PowerSploit"
-        "https://github.com/CoreSecurity/impacket /opt/Impacket"
+	"https://github.com/FuzzySecurity/PowerShell-Suite.git /opt/PowerShell"
+	"https://github.com/samratashok/nishang.git /opt/nishang"
+	"https://github.com/411Hall/JAWS.git /opt/JAWS"
+        "https://github.com/PowerShellMafia/PowerSploit.git /opt/PowerSploit"
+        "https://github.com/CoreSecurity/impacket.git /opt/Impacket"
+	"https://github.com/magnumripper/JohnTheRipper.git /opt/JohnJumbo"
         "https://github.com/danielmiessler/SecLists.git /opt/SecLists"
         "https://github.com/radare/radare2.git /opt/radare2"
         "https://github.com/rebootuser/LinEnum.git /opt/LinEnum/"
@@ -16,8 +21,17 @@ declare -a githublist=("https://github.com/tdifg/WebShell.git /opt/WebShell"
 )
 
 declare -a aptPackages=("gobuster ftp tor gcc-multilib g++-multilib golang tmux \
-	exiftool ncat strace ltrace libreoffice gimp nfs-common"
+	exiftool ncat strace ltrace libreoffice gimp nfs-common libssl-dev"
 )
+
+lockCheck() {
+    i=0 
+    while fuser /var/lib/dpkg/lock &>/dev/null; do
+        echo -ne "\r[!] Waiting for apt lock. If this persists, try rebooting. $i seconds..."
+        sleep 1
+        ((i++)) 
+    done
+}
 
 # Default to quiet output. Add -v for verbose
 verbosity='&>/dev/null'
@@ -33,26 +47,26 @@ if [[ $EUID -ne 0 ]]; then
         exit 1
 fi
 
-i=0 
-while fuser /var/lib/dpkg/lock &>/dev/null; do
-    echo -ne "\r[!] Waiting for apt lock. If this persists, try rebooting. $i seconds..."
-    sleep 1
-    ((i++)) 
-done
+# Disable suspend/sleep
+eval systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target $verbosity
+eval gsettings set org.gnome.desktop.session idle-delay 0 $verbosity
 
+
+lockCheck
 eval apt-get update $verbosity
 if !(which git &>/dev/null); then
-    eval apt-get install git -y $verbosity
+    eval apt-get install git -qy $verbosity
 fi
 
 for url in "${githublist[@]}"; do
-	eval git clone ${url} $verbosity &
+	eval git clone ${url} $verbosity 
 done
 
+lockCheck
 # Install packages one by one in case a package changes names
 echo "[ ] Installing main packages and cloning repos. This may take around 10 minutes..."
 for package in ${aptPackages[@]}; do
-	eval apt-get install ${package} -y $verbosity
+	eval apt-get install ${package} -qy $verbosity
 done
 
 eval curl -L https://github.com/radareorg/cutter/releases/download/v1.7.2/Cutter-v1.7.2-x86_64.Linux.AppImage > $HOME/Documents/Cutter-v1.7.2-x86_64.Linux.AppImage $verbosity &
@@ -61,10 +75,16 @@ echo "[ ] Installing packages and cloning repos. This may around 5 minutes..."
 wait
 
 # Secondary installation phase
-eval apt-get remove radare2 -y $verbosity
-cd /opt/radare2
+lockCheck
+eval apt-get remove radare2 -qy $verbosity
+#cd /opt/radare2
 echo "[ ] Installing radare2 from source..."
-eval sys/install.sh $verbosity & 
+eval /opt/radare2/sys/install.sh $verbosity &
+
+cd /opt/JohnJumbo/src
+echo "[ ] Installing John the Ripper Community Edition..."
+eval ./configure $verbosity 
+eval make $verbosity &
 
 rm $HOME/.vimrc 2>/dev/null 
 ln -s $HOME/.vim/.vimrc $HOME/.vimrc
@@ -79,7 +99,7 @@ echo "alias ll='ls -alh'" >> $HOME/.bashrc
 #rm -rf ~/.ssh
 #cat /dev/zero | ssh-keygen -t rsa -b 4096 -q -N '' -f ~/.ssh/id_rsa
 #tee ~/.ssh/authorized_keys << 'EOF'
-#ssh-rsa YOUR KEY GOES HERE
+#YOUR SSH KEY GOES HERE
 #EOF
 
 #final block
