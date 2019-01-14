@@ -5,8 +5,8 @@
 
 export DEBIAN_FRONTEND=noninteractive
 export APTLIST="gobuster ftp tor gcc-multilib g++-multilib golang tmux
-	exiftool ncat strace ltrace libreoffice gimp nfs-common libssl-dev steghide"
-
+	exiftool ncat strace ltrace libreoffice gimp nfs-common 
+	libssl-dev steghide snmp-mibs-downloader php-curl dbeaver"
 
 ## Add git packages here
 # Async will not be used for these. Use tarballs for those
@@ -28,6 +28,14 @@ declare -A tarlist=(
         ["https://github.com/danielmiessler/SecLists/tarball/master"]="SecLists"   
         ["https://github.com/radare/radare2/tarball/master"]="radare2"
         ["https://github.com/rebootuser/LinEnum/tarball/master"]="LinEnum"
+	["https://github.com/trailofbits/onesixtyone/tarball/master"]="onesixone"
+	["https://github.com/rasta-mouse/Sherlock/tarball/master"]="Sherlock"
+	["https://github.com/EmpireProject/Empire/tarball/master"]="Empire"
+	["https://github.com/SecWiki/windows-kernel-exploits/tarball/master"]="windows-kernel-exploits"
+	["https://github.com/M4ximuss/Powerless/tarball/master"]="Powerless"
+	["https://github.com/swisskyrepo/PayloadsAllTheThings/tarball/master"]="Payloads"
+	["https://github.com/andrew-d/static-binaries/tarball/master"]="static-binaries"
+
 )
 
 # Default to quiet output. Add -v for verbose
@@ -109,6 +117,9 @@ echo "[*] Installing pwntools..."
 eval pip install -q pwntools $verbosity \
 	&& echo "[^] pwntools installed!" &
 
+cd /opt/onesixone
+eval make $verbosity &
+
 echo "[+] Customizing vim and tmux..."
 rm $HOME/.vimrc 2>/dev/null 
 ln -s $HOME/.vim/.vimrc $HOME/.vimrc
@@ -118,6 +129,9 @@ eval vim +'PlugUpdate --sync' +qall &>/dev/null &
 
 echo "[+] Adding custom aliases..."
 echo "alias ll='ls -alh'" >> $HOME/.bashrc
+
+sed -i '/mibs/s/^/#/g' /etc/snmp/snmp.conf
+
 
 echo "[+] Generating ssh key..."
 rm -rf $HOME/.ssh
