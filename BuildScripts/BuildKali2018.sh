@@ -6,7 +6,9 @@
 export DEBIAN_FRONTEND=noninteractive
 export APTLIST="gobuster ftp tor gcc-multilib g++-multilib golang tmux
 	exiftool ncat strace ltrace libreoffice gimp nfs-common 
-	libssl-dev steghide snmp-mibs-downloader php-curl dbeaver"
+	libssl-dev steghide snmp-mibs-downloader php-curl dbeaver
+	knockd python3-pip bkhive html2text putty libcurl4-openssl-dev
+	libpcre3-dev libssh-dev freerdp2-x11 crackmapexec"
 
 ## Add git packages here
 # Async will not be used for these. Use tarballs for those
@@ -35,6 +37,9 @@ declare -A tarlist=(
 	["https://github.com/M4ximuss/Powerless/tarball/master"]="Powerless"
 	["https://github.com/swisskyrepo/PayloadsAllTheThings/tarball/master"]="Payloads"
 	["https://github.com/andrew-d/static-binaries/tarball/master"]="static-binaries"
+	["https://github.com/P0cL4bs/Kadimus/tarball/master"]="kadimus"
+	["https://github.com/sleventyeleven/linuxprivchecker/tarball/master"]="linuxprivchecker"
+
 
 )
 
@@ -120,6 +125,12 @@ eval pip install -q pwntools $verbosity \
 cd /opt/onesixone
 eval make $verbosity &
 
+echo "[*] Installing Kadimus"
+cd /opt/kadimus
+eval ./configure $verbosity
+eval make $verbosity
+
+
 echo "[+] Customizing vim and tmux..."
 rm $HOME/.vimrc 2>/dev/null 
 ln -s $HOME/.vim/.vimrc $HOME/.vimrc
@@ -142,7 +153,24 @@ cat /dev/zero | ssh-keygen -t rsa -b 2048 -q -N '' -f ~/.ssh/id_rsa
 #YOUR SSH KEY GOES HERE
 #EOF
 
+# Creates a script to fix copy/paste issues with Virtualbox
+# run it whenever guest additions stop working
+cat > ~/Desktop/fixCopyPasteVB.sh << 'EOF'
+killall VBoxClient
+VBoxClient --clipboard
+VBoxClient --checkhostversion
+VBoxClient --display
+VBoxClient --seamless
+VBoxClient --draganddrop
+EOF
+
 echo "[ ] Waiting for background processes to complete..."
 wait
+
+echo "[*] Installing win32 and mingw-64"
+eval dpkg --add-architecture i386 $verbosity
+eval apt-get update $verbosity
+eval apt-get install wine32 mingw-w64 -y $verbosity
+
 
 echo "[*] Done! Don't forget to change the root password!"
