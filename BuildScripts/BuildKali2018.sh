@@ -39,8 +39,8 @@ declare -A tarlist=(
 	["https://github.com/andrew-d/static-binaries/tarball/master"]="static-binaries"
 	["https://github.com/P0cL4bs/Kadimus/tarball/master"]="kadimus"
 	["https://github.com/sleventyeleven/linuxprivchecker/tarball/master"]="linuxprivchecker"
-
-
+	["https://github.com/codingo/Reconnoitre/tarball/master"]="Reconnoitre"
+	["https://github.com/mzet-/linux-exploit-suggester/tarball/master"]="linux-exploit-suggster"
 )
 
 # Default to quiet output. Add -v for verbose
@@ -130,6 +130,9 @@ cd /opt/kadimus
 eval ./configure $verbosity
 eval make $verbosity
 
+cd /opt/Reconnoitre
+eval python2 setup.py install $verbosity
+
 
 echo "[+] Customizing vim and tmux..."
 rm $HOME/.vimrc 2>/dev/null 
@@ -167,7 +170,7 @@ EOF
 echo "[ ] Waiting for background processes to complete..."
 wait
 
-echo "[*] Installing win32 and mingw-64"
+echo "[*] Installing wine32 and mingw-64"
 eval dpkg --add-architecture i386 $verbosity
 eval apt-get update $verbosity
 eval apt-get install wine32 mingw-w64 -y $verbosity
