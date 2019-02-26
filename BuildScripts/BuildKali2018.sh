@@ -170,6 +170,7 @@ VBoxClient --draganddrop
 EOF
 
 # Script for FTP server setup
+cd $HOME
 cat > initialize-pureftpd.sh << 'EOF'
 #!/usr/bin/env bash
 apt-get update; apt-get install pure-ftpd -y
