@@ -3,12 +3,13 @@
 # Easily download and run with:
 #   wget --quiet -O https://github.com/MyBagofTricks/CTF/blob/master/BuildScripts/BuildKali2018.sh | bash
 
+
 export DEBIAN_FRONTEND=noninteractive
 export APTLIST="gobuster ftp tor gcc-multilib g++-multilib golang tmux
 	exiftool ncat strace ltrace libreoffice gimp nfs-common 
 	libssl-dev steghide snmp-mibs-downloader php-curl dbeaver
 	knockd python3-pip bkhive html2text putty libcurl4-openssl-dev
-	libpcre3-dev libssh-dev freerdp2-x11 crackmapexec"
+	libpcre3-dev libssh-dev freerdp2-x11 crackmapexec wine32 mingw-w64"
 
 ## Add git packages here
 # Async will not be used for these. Use tarballs for those
@@ -91,6 +92,7 @@ eval curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.7
 
 lockCheck
 # Install packages one by one in case a package changes names
+eval dpkg --add-architecture i386 $verbosity
 echo "[+] Installing packages via apt. This may take 5-10min depending on your bandwidth..."
 for package in $APTLIST; do
 	eval apt-get install ${package} -qy $verbosity
@@ -185,11 +187,6 @@ eval chmod +x initialize-pureftpd.sh $verbosity
 
 echo "[ ] Waiting for background processes to complete..."
 wait
-
-echo "[*] Installing wine32 and mingw-64"
-eval dpkg --add-architecture i386 $verbosity
-eval apt-get update $verbosity
-eval apt-get install wine32 mingw-w64 -y $verbosity
 
 
 echo "[*] Done! Don't forget to change the root password!"
