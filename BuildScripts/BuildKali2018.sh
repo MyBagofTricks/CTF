@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script installs various packages for Kali, creates ssh keys, and tweaks settings
 # Easily download and run with:
 #   wget --quiet -O https://github.com/MyBagofTricks/CTF/blob/master/BuildScripts/BuildKali2018.sh | bash
@@ -166,6 +166,22 @@ VBoxClient --display
 VBoxClient --seamless
 VBoxClient --draganddrop
 EOF
+
+# Script for FTP server setup
+cat > initialize-pureftpd.sh << 'EOF'
+#!/usr/bin/env bash
+apt-get update; apt-get install pure-ftpd -y
+groupadd ftpgroup
+useradd -g ftpgroup -d /dev/null -s /etc ftpuser
+pure-pw useradd offsec -u ftpuser -d /ftphome
+pure-pw mkdb
+cd /etc/pure-ftpd/auth/
+ln -s ../conf/PureDB 60pdb
+mkdir -p /ftphome
+chown -R ftpuser:ftpgroup /ftphome/
+/etc/init.d/pure-ftpd restart
+EOF
+eval chmod +x initialize-pureftpd.sh $verbosity
 
 echo "[ ] Waiting for background processes to complete..."
 wait
