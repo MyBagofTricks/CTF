@@ -160,7 +160,7 @@ cat /dev/zero | ssh-keygen -t rsa -b 2048 -q -N '' -f ~/.ssh/id_rsa
 
 # Creates a script to fix copy/paste issues with Virtualbox
 # run it whenever guest additions stop working
-cat > ~/Desktop/fixCopyPasteVB.sh << 'EOF'
+cat > $HOME/fixCopyPasteVB.sh << 'EOF'
 killall VBoxClient
 VBoxClient --clipboard
 VBoxClient --checkhostversion
@@ -168,6 +168,7 @@ VBoxClient --display
 VBoxClient --seamless
 VBoxClient --draganddrop
 EOF
+chmod +x $HOME/fixCopyPasteVB.sh
 
 # Script for FTP server setup
 cd $HOME
@@ -189,7 +190,7 @@ eval chmod +x initialize-pureftpd.sh $verbosity
 echo "[*] Waiting for background processes to complete..."
 wait
 
-echo "[*] Select '2' in the following list to fix Burp and Java
+echo "[*] Select '2' in the following list to fix Burp and Java"
 update-alternatives --config java
 
 echo "[*] Done! Don't forget to change the root password!"
