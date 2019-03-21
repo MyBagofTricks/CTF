@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# This script installs various packages for Kali, creates ssh keys, and tweaks settings
+# This script installs various packages for Kali, creates ssh keys, fixes broken
+# software and applies some tweaks. It should be able to build i686/i386 too
 # Easily download and run with:
-#   wget --quiet -O https://github.com/MyBagofTricks/CTF/blob/master/BuildScripts/BuildKali2018.sh | bash
-
+#   wget --quiet -O https://github.com/MyBagofTricks/CTF/blob/master/BuildScripts/BuildKali2019.sh | bash
 
 export DEBIAN_FRONTEND=noninteractive
 export APTLIST="gobuster ftp tor gcc-multilib g++-multilib golang tmux
 	exiftool ncat strace ltrace libreoffice gimp nfs-common 
 	libssl-dev steghide snmp-mibs-downloader php-curl dbeaver
 	knockd python3-pip bkhive html2text putty libcurl4-openssl-dev
-	libpcre3-dev libssh-dev freerdp2-x11 crackmapexec wine32 mingw-w64"
+	libpcre3-dev libssh-dev freerdp2-x11 crackmapexec proxychains4
+	mingw-w64 wine"
 
 ## Add git packages here
 # Async will not be used for these. Use tarballs for those
@@ -114,6 +115,8 @@ eval ./configure $verbosity
 eval make $verbosity \
 	&& echo "[^] John the Ripper installed!" &
 
+echo "[*] Removing broken Impacket preinstalled on Kali"
+eval pip uninstall impacket -y $verbosity
 echo "[*] Installing Impacket..."
 cd /opt/Impacket
 eval pip install -q -r requirements.txt $verbosity
@@ -177,7 +180,7 @@ cat > initialize-pureftpd.sh << 'EOF'
 apt-get update; apt-get install pure-ftpd -y
 groupadd ftpgroup
 useradd -g ftpgroup -d /dev/null -s /etc ftpuser
-pure-pw useradd offsec -u ftpuser -d /ftphome
+pure-pw useradd hackerman -u ftpuser -d /ftphome
 pure-pw mkdb
 cd /etc/pure-ftpd/auth/
 ln -s ../conf/PureDB 60pdb
@@ -194,3 +197,4 @@ echo "[*] Select '2' in the following list to fix Burp and Java"
 update-alternatives --config java
 
 echo "[*] Done! Don't forget to change the root password!"
+echo "[*] Note: curl may have issues with older SSL. Needs fixing..."
