@@ -10,7 +10,7 @@ export APTLIST="gobuster ftp tor gcc-multilib g++-multilib golang tmux
 	libssl-dev steghide snmp-mibs-downloader php-curl dbeaver
 	knockd python3-pip bkhive html2text putty libcurl4-openssl-dev
 	libpcre3-dev libssh-dev freerdp2-x11 crackmapexec proxychains4
-	mingw-w64 wine"
+	mingw-w64 wine jq"
 
 ## Add git packages here
 # Async will not be used for these. Use tarballs for those
@@ -43,6 +43,7 @@ declare -A tarlist=(
 	["https://github.com/sleventyeleven/linuxprivchecker/tarball/master"]="linuxprivchecker"
 	["https://github.com/codingo/Reconnoitre/tarball/master"]="Reconnoitre"
 	["https://github.com/mzet-/linux-exploit-suggester/tarball/master"]="linux-exploit-suggster"
+	["https://github.com/FuzzySecurity/PowerShell-Suite/tarball/master"]="Powershell-Suite"
 )
 
 # Default to quiet output. Add -v for verbose
@@ -137,6 +138,9 @@ eval make $verbosity
 
 cd /opt/Reconnoitre
 eval python2 setup.py install $verbosity
+
+cd /opt/Empire
+eval setup/install.sh $verbosity
 
 
 echo "[+] Customizing vim and tmux..."
