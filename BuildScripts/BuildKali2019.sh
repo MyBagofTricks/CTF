@@ -65,7 +65,7 @@ lockCheck() {
     done
 }
 
-echo "*** Starting Custom Kali build script. Use -v for verbose output ***"
+echo "[*] Starting Custom Kali build script. Use -v for verbose output ***"
 # Bail out if not run as root
 if [[ $EUID -ne 0 ]]; then
         echo "[!] This script needs root privileges."
@@ -93,32 +93,28 @@ eval curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.7
 	&& chmod +x $HOME/Desktop/Cutter.AppImage &
 
 lockCheck
-# Install packages one by one in case a package changes names
+echo "[+] Installing the first batch of apt packages. This may take 5-10mins..."
 eval dpkg --add-architecture i386 $verbosity
-echo "[+] Installing packages via apt. This may take 5-10min depending on your bandwidth..."
-for package in $APTLIST; do
-	eval apt-get install ${package} -qy $verbosity
-done
+eval apt-get install $APTLIST -y $verbosity
 
 wait
-
 ## Secondary installation phase
 # Build any packages downloaded in previous step here
 lockCheck
-echo "[*] Installing radare2 from source..."
+echo "[+] Installing radare2 from source..."
 eval apt-get remove radare2 -qy $verbosity
 eval /opt/radare2/sys/install.sh $verbosity \
 	&& echo "[^] radare2 installed!" &
 
-echo "[*] Installing John the Ripper Community Edition..."
+echo "[+] Installing John the Ripper Community Edition..."
 cd /opt/JohnJumbo/src
 eval ./configure $verbosity 
 eval make $verbosity \
 	&& echo "[^] John the Ripper installed!" &
 
-echo "[*] Removing broken Impacket preinstalled on Kali"
+echo "[-] Removing broken Impacket preinstalled on Kali"
 eval pip uninstall impacket -y $verbosity
-echo "[*] Installing Impacket..."
+echo "[+] Installing Impacket..."
 cd /opt/Impacket
 eval pip install -q -r requirements.txt $verbosity
 eval python setup.py install $verbosity \
@@ -126,21 +122,19 @@ eval python setup.py install $verbosity \
 
 echo "[*] Installing pwntools..."
 eval pip install -q pwntools $verbosity \
-	&& echo "[^] pwntools installed!" &
+	&& echo "[^] pwntools installed!" 
+
 
 cd /opt/onesixone
 eval make $verbosity &
 
-echo "[*] Installing Kadimus"
+echo "[+] Installing Kadimus"
 cd /opt/kadimus
 eval ./configure $verbosity
-eval make $verbosity
+eval make $verbosity &
 
-cd /opt/Reconnoitre
-eval python2 setup.py install $verbosity
-
-cd /opt/Empire
-eval setup/install.sh $verbosity
+echo "[+] Installing wine32..."
+eval apt-get install wine32 -y $verbosity
 
 
 echo "[+] Customizing vim and tmux..."
@@ -192,13 +186,16 @@ mkdir -p /ftphome
 chown -R ftpuser:ftpgroup /ftphome/
 /etc/init.d/pure-ftpd restart
 EOF
-eval chmod +x initialize-pureftpd.sh $verbosity
+chmod +x initialize-pureftpd.sh
+
+cd /opt/Empire
+eval echo | eval setup/install.sh $verbosity
+
+echo "[*] Setting Burp's java to 8 for compatability"
+eval echo "2" | eval update-alternatives --config java >/dev/null
 
 echo "[*] Waiting for background processes to complete..."
 wait
 
-echo "[*] Select '2' in the following list to fix Burp and Java"
-update-alternatives --config java
-
-echo "[*] Done! Don't forget to change the root password!"
-echo "[*] Note: curl may have issues with older SSL. Needs fixing..."
+echo "[^] Done! Don't forget to change the root password!"
+echo "[!] Note: curl may have issues with older ssl ciphers. If so try installing libssl-dev"
