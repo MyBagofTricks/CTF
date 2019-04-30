@@ -10,7 +10,7 @@ export APTLIST="gobuster ftp tor gcc-multilib g++-multilib golang tmux
 	libssl-dev steghide snmp-mibs-downloader php-curl dbeaver
 	knockd python3-pip bkhive html2text putty libcurl4-openssl-dev
 	libpcre3-dev libssh-dev freerdp2-x11 crackmapexec proxychains4
-	mingw-w64 wine jq"
+	mingw-w64 wine wine32 jq evolution"
 
 ## Add git packages here
 # Async will not be used for these. Use tarballs for those
@@ -23,7 +23,6 @@ declare -a githublist=(
 # The name will be used for the target directory in /opt
 declare -A tarlist=(
 	["https://github.com/tdifg/WebShell/tarball/master"]="WebShell"
-	["https://github.com/FuzzySecurity/PowerShell-Suite/tarball/master"]="PowerShell" 
 	["https://github.com/samratashok/nishang/tarball/master"]="nishang"
 	["https://github.com/411Hall/JAWS/tarball/master"]="JAWS"
         ["https://github.com/PowerShellMafia/PowerSploit/tarball/master"]="PowerSploit"
@@ -37,13 +36,13 @@ declare -A tarlist=(
 	["https://github.com/EmpireProject/Empire/tarball/master"]="Empire"
 	["https://github.com/SecWiki/windows-kernel-exploits/tarball/master"]="windows-kernel-exploits"
 	["https://github.com/M4ximuss/Powerless/tarball/master"]="Powerless"
-	["https://github.com/swisskyrepo/PayloadsAllTheThings/tarball/master"]="Payloads"
+	["https://github.com/swisskyrepo/PayloadsAllTheThings/tarball/master"]="PayloadAllTheThings"
 	["https://github.com/andrew-d/static-binaries/tarball/master"]="static-binaries"
-	["https://github.com/P0cL4bs/Kadimus/tarball/master"]="kadimus"
 	["https://github.com/sleventyeleven/linuxprivchecker/tarball/master"]="linuxprivchecker"
-	["https://github.com/codingo/Reconnoitre/tarball/master"]="Reconnoitre"
 	["https://github.com/mzet-/linux-exploit-suggester/tarball/master"]="linux-exploit-suggster"
 	["https://github.com/FuzzySecurity/PowerShell-Suite/tarball/master"]="Powershell-Suite"
+	["https://github.com/mwielgoszewski/python-paddingoracle/tarball/master"]="python-poodle"
+	["https://github.com/diego-treitos/linux-smart-enumeration.git"]="linux-smart-enum"
 )
 
 # Default to quiet output. Add -v for verbose
@@ -89,12 +88,13 @@ for url in "${githublist[@]}"; do
 	eval git clone ${url} $verbosity
 done
 
-eval curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.7.2/Cutter-v1.7.2-x86_64.Linux.AppImage -o $HOME/Desktop/Cutter.AppImage \
-	&& chmod +x $HOME/Desktop/Cutter.AppImage &
+eval curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.7.2/Cutter-v1.7.2-x86_64.Linux.AppImage -o $HOME/Cutter.AppImage \
+	&& chmod +x $HOME/Cutter.AppImage &
 
 lockCheck
 echo "[+] Installing the first batch of apt packages. This may take 5-10mins..."
 eval dpkg --add-architecture i386 $verbosity
+eval apt-get update $verbosity
 eval apt-get install $APTLIST -y $verbosity
 
 wait
@@ -124,17 +124,16 @@ echo "[*] Installing pwntools..."
 eval pip install -q pwntools $verbosity \
 	&& echo "[^] pwntools installed!" 
 
+echo "[*] Installing python-paddingoracle API"
+cd /opt/python-poodle
+eval python2 setup.py install $verbosity
 
 cd /opt/onesixone
 eval make $verbosity &
 
-echo "[+] Installing Kadimus"
-cd /opt/kadimus
-eval ./configure $verbosity
-eval make $verbosity &
-
-echo "[+] Installing wine32..."
-eval apt-get install wine32 -y $verbosity
+#echo "[+] Installing wine32..."
+#eval apt-get update $verbosity
+#eval apt-get install wine32 -y $verbosity
 
 
 echo "[+] Customizing vim and tmux..."
