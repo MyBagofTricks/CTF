@@ -10,7 +10,7 @@ export APTLIST="gobuster ftp tor gcc-multilib g++-multilib golang tmux
 	libssl-dev steghide snmp-mibs-downloader php-curl dbeaver
 	knockd python3-pip bkhive html2text putty libcurl4-openssl-dev
 	libpcre3-dev libssh-dev freerdp2-x11 crackmapexec proxychains4
-	mingw-w64 wine wine32 jq evolution"
+	mingw-w64 wine wine32 jq evolution firefox-esr"
 
 ## Add git packages here
 # Async will not be used for these. Use tarballs for those
@@ -42,7 +42,8 @@ declare -A tarlist=(
 	["https://github.com/mzet-/linux-exploit-suggester/tarball/master"]="linux-exploit-suggster"
 	["https://github.com/FuzzySecurity/PowerShell-Suite/tarball/master"]="Powershell-Suite"
 	["https://github.com/mwielgoszewski/python-paddingoracle/tarball/master"]="python-poodle"
-	["https://github.com/diego-treitos/linux-smart-enumeration.git"]="linux-smart-enum"
+	["https://github.com/diego-treitos/linux-smart-enumeration/tarball/master"]="linux-smart-enum"
+	["https://github.com/jpillora/chisel/tarball/master"]="chisel"
 )
 
 # Default to quiet output. Add -v for verbose
@@ -130,10 +131,6 @@ eval python2 setup.py install $verbosity
 
 cd /opt/onesixone
 eval make $verbosity &
-
-#echo "[+] Installing wine32..."
-#eval apt-get update $verbosity
-#eval apt-get install wine32 -y $verbosity
 
 
 echo "[+] Customizing vim and tmux..."
