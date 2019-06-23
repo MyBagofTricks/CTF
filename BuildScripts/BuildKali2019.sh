@@ -10,7 +10,8 @@ export APTLIST="gobuster ftp tor gcc-multilib g++-multilib golang tmux
 	libssl-dev steghide snmp-mibs-downloader php-curl dbeaver
 	knockd python3-pip bkhive html2text putty libcurl4-openssl-dev
 	libpcre3-dev libssh-dev freerdp2-x11 crackmapexec proxychains4
-	mingw-w64 wine wine32 jq evolution firefox-esr"
+	mingw-w64 wine wine32 jq evolution firefox-esr cifs-utils
+	libgmp3-dev libmpc-dev"
 
 ## Add git packages here
 # Async will not be used for these. Use tarballs for those
@@ -23,6 +24,9 @@ declare -a githublist=(
 # The name will be used for the target directory in /opt
 declare -A tarlist=(
 	["https://github.com/tdifg/WebShell/tarball/master"]="WebShell"
+	['https://github.com/cobbr/Covenant/tarball/master']="Covenant"
+	['https://github.com/cobbr/Covenant/tarball/master']="Elite"
+	["https://github.com/BloodHoundAD/BloodHound/tarball/master"]="Bloodhound"
 	["https://github.com/samratashok/nishang/tarball/master"]="nishang"
 	["https://github.com/411Hall/JAWS/tarball/master"]="JAWS"
         ["https://github.com/PowerShellMafia/PowerSploit/tarball/master"]="PowerSploit"
@@ -44,6 +48,7 @@ declare -A tarlist=(
 	["https://github.com/mwielgoszewski/python-paddingoracle/tarball/master"]="python-poodle"
 	["https://github.com/diego-treitos/linux-smart-enumeration/tarball/master"]="linux-smart-enum"
 	["https://github.com/jpillora/chisel/tarball/master"]="chisel"
+	["https://github.com/Ganapati/RsaCtfTool/tarball/master"]="RsaCtfTool"
 )
 
 # Default to quiet output. Add -v for verbose
@@ -89,6 +94,10 @@ for url in "${githublist[@]}"; do
 	eval git clone ${url} $verbosity
 done
 
+eval git clone https://github.com/longld/peda.git ~/peda $verbosity
+eval echo "source ~/peda/peda.py" >> ~/.gdbinit
+
+
 eval curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.7.2/Cutter-v1.7.2-x86_64.Linux.AppImage -o $HOME/Cutter.AppImage \
 	&& chmod +x $HOME/Cutter.AppImage &
 
@@ -120,6 +129,9 @@ cd /opt/Impacket
 eval pip install -q -r requirements.txt $verbosity
 eval python setup.py install $verbosity \
 	&& echo "[^] Impacket installed!" &
+
+cd /opt/RsaCtfTool
+eval pip3 install -r requirements.txt $verbosity
 
 echo "[*] Installing pwntools..."
 eval pip install -q pwntools $verbosity \
