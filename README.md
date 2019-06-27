@@ -1,3 +1,4 @@
-Small repo of solutions for other people's awesome CTFs!
+# CTF tools
 
-More to come.
+This is an basic repo for CTF tools, writeups, and build scripts.
+
