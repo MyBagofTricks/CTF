@@ -131,8 +131,8 @@ cd /opt/onesixtyone
 eval make $verbosity && ln -sf /opt/onesixtyone/onesixtyone /usr/local/sbin/onesixtyone & 
 
 cd /opt/gobuster
-eval go get $verbosity && go build -o /usr/bin/gobuster $verbosity &
-eval rm -rf /opt/gobuster $verbosity &
+eval go get $verbosity && go build -o /usr/bin/gobuster $verbosity \
+	&& rm -rf /opt/gobuster $verbosity &
 
 echo "[+] Installing and configuring Covenant/Elite"
 cd /opt/Covenant/Covenant
