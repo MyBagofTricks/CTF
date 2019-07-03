@@ -153,7 +153,7 @@ echo "[+] Adding custom aliases..."
 echo "alias ll='ls -alh'" >> $HOME/.bashrc
 
 sed -i '/mibs/s/^/#/g' /etc/snmp/snmp.conf
-echo "source $HOME/peda.py" >> $HOME/.gdbinit
+echo "source $HOME/peda/peda.py" >> $HOME/.gdbinit
 
 echo "[+] Generating ssh key..."
 rm -rf $HOME/.ssh
