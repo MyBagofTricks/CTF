@@ -10,7 +10,7 @@ libssl-dev steghide snmp-mibs-downloader php-curl dbeaver
 knockd python3-pip bkhive html2text putty libcurl4-openssl-dev
 libpcre3-dev libssh-dev freerdp2-x11 crackmapexec proxychains4
 mingw-w64 wine wine32 jq evolution firefox-esr cifs-utils
-libgmp3-dev libmpc-dev docker.io"
+libgmp3-dev libmpc-dev docker.io jq rlwrap"
 
 
 # Format: ["url1"]="path" ["url2"]="path" etc
