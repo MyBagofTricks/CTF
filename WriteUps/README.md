@@ -15,6 +15,6 @@
 
 [CMU Binary Bomb - Phase 6](https://medium.com/@MyBagofTricks/cmu-bomb-lab-with-radare2-phase-6-12c88456de99)
 
-
+[CMU Binary Bomb - Secret Phase](https://medium.com/@MyBagofTricks/cmu-bomb-lab-with-radare2-secret-phase-24be9bb46087)
 
 
