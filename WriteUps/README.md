@@ -2,6 +2,11 @@
 
 [MyBagofTricks @ Medium](https://medium.com/@MyBagofTricks)
 
+
+## MalwareTech's Challenges
+[MalwareTech's Strings and Shellcode Challenges with Radare2](https://medium.com/@MyBagofTricks/malwaretechs-strings-and-shellcode-challenges-with-radare2-96b77cc8bbfd)
+
+
 ## CMU Binary Bomb with Radare2
 [CMU Binary Bomb - Phase 1](https://medium.com/@MyBagofTricks/cmu-bomb-lab-with-radare2-phase-1-e8505782ae30)
 
