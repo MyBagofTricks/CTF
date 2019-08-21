@@ -94,7 +94,7 @@ eval apt-get install $APTLIST -y $verbosity
 wait
 # Build packages downloaded in previous step here
 lockCheck
-eval apt-get remove radare2 onesixtyone python-impacket -qy $verbosity
+eval apt-get remove needrestart radare2 onesixtyone python-impacket -qy $verbosity
 
 
 echo "[+] Installing radare2 from source"
@@ -141,6 +141,16 @@ eval docker build -t covenant . $verbosity && echo "[*] Covenant installed"
 cd /opt/Elite/Elite
 eval docker build -t elite . -q $verbosity && echo "[*] Elite installed"
 
+echo "[x] Installing smbmap from source"
+eval cd /opt && git clone https://github.com/ShawnDEvans/smbmap.git $verbosity
+eval apt remove smbmap -y $verbosity
+eval cd smbmap && pip3 install -r requirements.txt $verbosity
+eval ln -s /opt/smbmap/smbmap.py /usr/bin/smbmap && chmod +x /usr/bin/smbmap $verbosity
+
+echo "[x] Installig Ropper from source"
+eval cd /opt && git clone https://github.com/sashs/Ropper.git $verbosity
+eval cd /opt/Ropper && pip install -r requirements.txt $verbosity
+eval python setup.py install $verbosity
 
 echo "[+] Customizing vim and tmux..."
 rm $HOME/.vimrc 2>/dev/null 
@@ -192,6 +202,10 @@ chown -R ftpuser:ftpgroup /ftphome/
 /etc/init.d/pure-ftpd restart
 __EOF__
 chmod +x $HOME/initialize-pureftpd.sh
+
+echo "[x] Reinstalling Sparta, CrackMapExec, and enum4linux"
+eval apt install crackmapexec sparta enum4linux -y $verbosity
+
 
 
 echo "[*] Setting Burp's java to 8 for compatibility"
