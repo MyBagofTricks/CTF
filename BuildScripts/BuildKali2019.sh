@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # This script installs various bells and whistles for Kali.
 # It focuses on tools, bug fixes, and bleeding edge updates
-# Easily download and run with: wget --quiet -O https://github.com/MyBagofTricks/CTF/blob/master/BuildScripts/BuildKali2019.sh | bash
+# Easily download and run with: wget --quiet -O - https://raw.githubusercontent.com/MyBagofTricks/CTF/master/BuildScripts/BuildKali2019.sh| bash
 
 export DEBIAN_FRONTEND=noninteractive
 export APTLIST="ftp tor gcc-multilib g++-multilib golang tmux
@@ -105,13 +105,6 @@ cd /opt/JohnJumbo/src
 eval ./configure $verbosity 
 eval make $verbosity && echo "[*] John the Ripper installed!" && rm -rf /opt/JohnJumbo &
 
-echo "[-] Removing broken Impacket preinstalled on Kali"
-eval pip uninstall impacket -y $verbosity
-echo "[+] Installing Impacket"
-cd /opt/Impacket
-eval pip install -q -r requirements.txt $verbosity
-eval python setup.py install $verbosity && echo "[*] Impacket installed!" &
-
 cd /opt/RsaCtfTool
 eval pip3 install -r requirements.txt $verbosity
 eval ln -sf /opt/RsaCtfTool/RsaCtfTool.py /usr/local/sbin/RsaCtfTool.py $verbosity
@@ -204,9 +197,14 @@ __EOF__
 chmod +x $HOME/initialize-pureftpd.sh
 
 echo "[x] Reinstalling Sparta, CrackMapExec, and enum4linux"
-eval apt install crackmapexec sparta enum4linux -y $verbosity
+eval apt install crackmapexec sparta enum4linux smbmap -y $verbosity
 
-
+echo "[-] Removing broken Impacket preinstalled on Kali"
+eval pip uninstall impacket -y $verbosity
+echo "[+] Installing Impacket"
+cd /opt/Impacket
+eval pip install -q -r requirements.txt $verbosity
+eval python setup.py install $verbosity && echo "[*] Impacket installed!" &
 
 echo "[*] Setting Burp's java to 8 for compatibility"
 eval echo "2" | eval update-alternatives --config java >/dev/null
