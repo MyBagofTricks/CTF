@@ -6,9 +6,12 @@
 # - r2 w/ r2ghidra-dec, r2dec
 # - updated CMake
 # - vim/tmux bindings
-# Build: sudo docker build -t ubuntu18:ctf - < Dockerfile
-# Run: sudo docker run -d --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -p 22:22 -p 80:80  -i ubuntu18:ctf
+# - Metasploit
+# Build: sudo docker build -t ubuntu18:pwnlab - < Dockerfile-pwnlab
+# Run: sudo docker run -d --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -p 22:22 -p 80:80  -i ubuntu18:pwnlab
 # Shell: sudo docker exec -it <DOCKERID> /bin/bash
+# Note: Running this container with "--cap-add=SYS_PTRACE --security-opt seccomp=unconfined" is a security risk, but
+# useful when developing exploits.  
 FROM ubuntu:18.04
 ENV LC_CTYPE C.UTF-8
 RUN dpkg --add-architecture i386 && \
@@ -23,6 +26,11 @@ git clone https://github.com/radare/radare2 /tools/radare2 && \
 /tools/radare2/sys/install.sh && r2pm init && r2pm -i r2ghidra-dec r2dec && \
 git clone --single-branch --branch dev3 https://github.com/Gallopsled/pwntools /tools/pwntools && \
 cd /tools/pwntools && pip3 install -r requirements.txt && pip3 install --upgrade --editable /tools/pwntools && \
+curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall && \
+chmod 755 msfinstall && ./msfinstall && rm -rf msfinstall && \
+git clone https://github.com/volatilityfoundation/volatility.git /tools/volatility && \
+cd /tools/volatility && python2 setup.py install && \
 git clone https://github.com/MyBagofTricks/vimconfig.git ~/.vim && \
+rm -rf /var/lib/apt/lists/* && apt-get clean && \ 
 ln -s ~/.vim/.vimrc ~/.vimrc && ln -s ~/.vim/.tmux.conf ~/.tmux.conf && \
 vim +'PlugUpdate --sync' +qall && echo "alias ll='ls -alh'" >> $HOME/.bashrc

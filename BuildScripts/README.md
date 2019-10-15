@@ -1,3 +1,9 @@
 # Build Scripts
 
-These are some basic build scripts for Kali and Ubuntu to add packages for debugging, forensics, and analysis.
+A collection of scripts for installing/updating RE tools.
+
+- Docker-pwnlab - Basic RE lab in a Docker container (Ubuntu 18)
+- BuildKali2019 - Basic build script for Kali2019 (Last tested on 2019.1)
+- BuildKali2018 - abandoned for Kali2019
+- BuildUbuntu - Build script for Ubuntu, adding RE tools 
+
