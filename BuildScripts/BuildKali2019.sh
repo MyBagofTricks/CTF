@@ -39,9 +39,11 @@ declare -A tarlist=(
 ["https://github.com/FuzzySecurity/PowerShell-Suite/tarball/master"]="/opt/Powershell-Suite"
 ["https://github.com/mwielgoszewski/python-paddingoracle/tarball/master"]="/opt/python-poodle"
 ["https://github.com/diego-treitos/linux-smart-enumeration/tarball/master"]="/opt/linux-smart-enum"
+["https://github.com/ShawnDEvans/smbmap/tarball/master"]="/opt/smbmap"
 ["https://github.com/jpillora/chisel/tarball/master"]="/opt/chisel"
 ["https://github.com/Ganapati/RsaCtfTool/tarball/master"]="/opt/RsaCtfTool"
 ["https://github.com/OJ/gobuster/tarball/master"]="/opt/gobuster"
+["https://github.com/sashs/Ropper/tarball/master"]="/opt/Ropper"
 ["https://github.com/MyBagofTricks/vimconfig/tarball/master"]="/root/.vim"
 ["https://github.com/longld/peda/tarball/master"]="/root/peda"
 )
@@ -72,7 +74,6 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 lockCheck
-echo "[+] Disabling suspend/sleep"
 eval systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target $verbosity
 eval gsettings set org.gnome.desktop.session idle-delay 0 $verbosity
 
@@ -82,7 +83,7 @@ for url in "${!tarlist[@]}"; do
 		| tar -xzC ${tarlist[$url]} --strip-component=1 2>/dev/null &
 done
 
-eval curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.7.2/Cutter-v1.7.2-x86_64.Linux.AppImage -o /usr/local/sbin/Cutter \
+eval curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.9.0/Cutter-v1.9.0-x64.Linux.AppImage -o /usr/local/sbin/Cutter \
 	&& chmod +x /usr/local/sbin/Cutter &
 
 lockCheck
@@ -135,13 +136,11 @@ cd /opt/Elite/Elite
 eval docker build -t elite . -q $verbosity && echo "[*] Elite installed"
 
 echo "[x] Installing smbmap from source"
-eval cd /opt && git clone https://github.com/ShawnDEvans/smbmap.git $verbosity
 eval apt remove smbmap -y $verbosity
-eval cd smbmap && pip3 install -r requirements.txt $verbosity
+eval cd /opt/smbmap && pip3 install -r requirements.txt $verbosity
 eval ln -s /opt/smbmap/smbmap.py /usr/bin/smbmap && chmod +x /usr/bin/smbmap $verbosity
 
 echo "[x] Installig Ropper from source"
-eval cd /opt && git clone https://github.com/sashs/Ropper.git $verbosity
 eval cd /opt/Ropper && pip install -r requirements.txt $verbosity
 eval python setup.py install $verbosity
 
@@ -197,7 +196,7 @@ __EOF__
 chmod +x $HOME/initialize-pureftpd.sh
 
 echo "[x] Reinstalling Sparta, CrackMapExec, and enum4linux"
-eval apt install crackmapexec sparta enum4linux smbmap -y $verbosity
+eval apt install crackmapexec sparta enum4linux -y $verbosity
 
 echo "[-] Removing broken Impacket preinstalled on Kali"
 eval pip uninstall impacket -y $verbosity
@@ -206,7 +205,7 @@ cd /opt/Impacket
 eval pip install -q -r requirements.txt $verbosity
 eval python setup.py install $verbosity && echo "[*] Impacket installed!" &
 
-echo "[*] Setting Burp's java to 8 for compatibility"
+echo "[*] Setting Burp's Java to 8 for compatibility"
 eval echo "2" | eval update-alternatives --config java >/dev/null
 
 echo "[*] Waiting for background processes to complete..."
