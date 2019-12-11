@@ -12,7 +12,7 @@ libpcre3-dev libssh-dev freerdp2-x11 crackmapexec proxychains4
 mingw-w64 wine wine32 jq evolution firefox-esr cifs-utils
 libgmp3-dev libmpc-dev docker.io jq rlwrap libzip-dev bison
 cmake flex checkinstall powershell gnome-terminal vim-nox
-gdb"
+gdb openjdk-11-jdk"
 
 declare -A gitlist=(
 ["https://github.com/tdifg/WebShell.git"]="/opt/WebShell"
@@ -71,19 +71,24 @@ for url in "${!gitlist[@]}"; do
        git clone $url ${gitlist[$url]} --quiet
 done &
 
-curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.9.0/Cutter-v1.9.0-x64.Linux.AppImage -o /usr/local/sbin/Cutter \
-	&& chmod +x /usr/local/sbin/Cutter &
 
 lockCheck
-echo "[+] Installing the first batch of apt packages. This may take 5-10mins..."
+echo "[+] Installing apt packages. This may take 5-10mins..."
 dpkg --add-architecture i386 
 apt-get update 
 apt-get install $APTLIST -y 
 
 apt-get remove needrestart radare2 onesixtyone python-impacket smbmap -qy 
 apt-get autoremove -y 
-
 wait
+
+curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.9.0/Cutter-v1.9.0-x64.Linux.AppImage -o /usr/local/sbin/Cutter \
+	&& chmod +x /usr/local/sbin/Cutter &
+
+curl --silent -L https://ghidra-sre.org/ghidra_9.1_PUBLIC_20191023.zip -o /opt/ghidra_9.1_PUBLIC_20191023.zip ; cd /opt; unzip ghidra_9.1_PUBLIC_20191023.zip; rm ghidra_9.1_PUBLIC_20191023.zip \
+	&& ln -sf /opt/ghidra_9.1_PUBLIC/ghidraRun /usr/local/bin/ghidraRun \
+        && echo "[+] Ghidra installed!" &
+
 # Build packages downloaded in previous step here
 lockCheck
 echo "[+] Installing radare2 from source"
