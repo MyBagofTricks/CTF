@@ -8,7 +8,7 @@ export APTLIST="ftp tor gcc-multilib g++-multilib golang tmux
 exiftool ncat strace ltrace libreoffice gimp nfs-common 
 libssl-dev steghide snmp-mibs-downloader php-curl dbeaver
 knockd python3-pip samdump2 html2text putty libcurl4-openssl-dev
-libpcre3-dev libssh-dev freerdp2-x11 crackmapexec proxychains4
+libpcre3-dev libssh-dev freerdp2-x11 proxychains4
 mingw-w64 wine wine32 jq evolution firefox-esr cifs-utils
 libgmp3-dev libmpc-dev docker.io jq rlwrap libzip-dev bison
 cmake flex checkinstall powershell gnome-terminal vim-nox
@@ -45,121 +45,152 @@ declare -A gitlist=(
 ["https://github.com/sashs/Ropper.git"]="/opt/Ropper"
 ["https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite.git"]="/opt/peass"
 ["https://github.com/MyBagofTricks/vimconfig.git"]="/root/.vim"
-["https://github.com/longld/peda.git"]="/root/peda"
+["https://github.com/byt3bl33d3r/CrackMapExec --recursive"]="/opt/CrackMapExec" 
 )
 
 ## Funcitons 
-lockCheck() {
+pretty_print() {                               
+        OK='\033[0;32m'
+        BAD='\033[0;31m'                                      
+        NEUTRAL='\033[0;34m'                           
+        NC='\033[0m'
+        case "$2" in                                           
+                "!" | "+" | "^") echo -e "$OK[$2]$NC $1";;
+                "x") echo -e "$BAD[$2]$NC $1";;
+                "*") echo -e "$NEUTRAL[$2]$NC $1";;
+                *) echo "[ ] $1";;      
+        esac
+}
+
+lock_check() {
     i=0 
     while fuser /var/lib/dpkg/lock &>/dev/null; do
-        echo -ne "\r[!] Waiting for apt lock. If this persists, kill it or reboot. $i sec elapsed..."
+	    echo -ne "\r[!] Waiting for apt lock. If this persists, kill it or reboot. $i sec elapsed..."
         sleep 1
         ((i++)) 
     done
 }
 
-echo "*** Starting Custom Kali build script ***"
+pretty_print "*** Starting Custom Kali build script ***" "!"
 # Bail out if not run as root
 if [[ $EUID -ne 0 ]]; then
-        echo "[!] This script needs root privileges."
+        pretty_print "This script needs root privileges." "x"
         exit 1
 fi
 
-lockCheck
-echo "[+] Downloading Git repos in background"
+lock_check
+pretty_print "Downloading Git repos in background" "*"
 for url in "${!gitlist[@]}"; do
        git clone $url ${gitlist[$url]} --quiet
 done &
 
-
-lockCheck
-echo "[+] Installing apt packages. This may take 5-10mins..."
+lock_check
 dpkg --add-architecture i386 
-apt-get update 
-apt-get install $APTLIST -y 
+apt-get -qq update 
+pretty_print "Installing Stage 1 packages via apt:\n$APTLIST\nThis may take 5-10mins..." "*"
+apt-get install -qq $APTLIST &>/dev/null 
+pretty_print "Stage 1 packages installed." "+"
 
-apt-get remove needrestart radare2 onesixtyone python-impacket smbmap -qy 
-apt-get autoremove -y 
+pretty_print "Removing outdated packages to instal newer versions" "*"
+apt-get -qy remove needrestart radare2 onesixtyone python-impacket smbmap metasploit-framework &>/dev/null 
+apt-get -qy autoremove &>/dev/null
+pretty_print "Outdated packages removed." "+"
+pretty_print "Waiting for background downloads to complete before starting Stage2" "!"
 wait
 
-curl --silent -L https://github.com/radareorg/cutter/releases/download/v1.9.0/Cutter-v1.9.0-x64.Linux.AppImage -o /usr/local/sbin/Cutter \
-	&& chmod +x /usr/local/sbin/Cutter &
+pip3 install poodle --quiet
 
-curl --silent -L https://ghidra-sre.org/ghidra_9.1_PUBLIC_20191023.zip -o /opt/ghidra_9.1_PUBLIC_20191023.zip ; cd /opt; unzip ghidra_9.1_PUBLIC_20191023.zip; rm ghidra_9.1_PUBLIC_20191023.zip \
+curl -sL https://github.com/radareorg/cutter/releases/download/v1.10.0/Cutter-v1.10.0-x64.Linux.AppImage -o /usr/local/sbin/Cutter \
+	&& chmod +x /usr/local/sbin/Cutter && pretty_print "Cutter installed" "+" &
+
+curl -sL https://ghidra-sre.org/ghidra_9.1_PUBLIC_20191023.zip -o /opt/ghidra_9.1_PUBLIC_20191023.zip ; cd /opt; unzip ghidra_9.1_PUBLIC_20191023.zip &>/dev/null ; rm ghidra_9.1_PUBLIC_20191023.zip \
 	&& ln -sf /opt/ghidra_9.1_PUBLIC/ghidraRun /usr/local/bin/ghidraRun \
-        && echo "[+] Ghidra installed!" &
+        && pretty_print "Ghidra installed!" "+" &
 
 # Build packages downloaded in previous step here
-lockCheck
-echo "[+] Installing radare2 from source"
-cd /opt/radare2 && make purge;  sys/install.sh && echo "[*] radare2 installed!" 
+lock_check
+pretty_print "Installing radare2 from source" "*"
+cd /opt/radare2 && make purge;  sys/install.sh &>/dev/null \
+	&& pretty_print "radare2 installed!" "+"
 
-echo "[+] Installing r2ghidara + r2retdec"
-r2pm init && r2pm update; r2pm -i r2ghidra-dec r2retdec retdec \
-	&& echo "[*] radare2 plugins installed!" &
+pretty_print "Installing r2ghidara + r2dec" "*"
+r2pm init && r2pm update; r2pm -i r2ghidra-dec r2dec r2retdec retdec &>/dev/null \
+	&& pretty_print "radare2 plugins installed!" "+" &
 
-echo "[+] Installing John the Ripper Community Edition"
-cd /opt/JohnJumbo/src
-./configure 
-make && echo "[*] John the Ripper installed!" && rm -rf /opt/JohnJumbo &
+pretty_print "Installing the latest version of Metasploit" "*"
+curl -sL https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall \
+	&& chmod 755 msfinstall && ./msfinstall &>/dev/null && rm msfinstall \
+	&& pretty_print "Metasploit installed successfully!" "+" &
+
+pretty_print "Installing John the Ripper Community Edition" "*"
+cd /opt/JohnJumbo/src && ./configure &>/dev/null && make &>/dev/null \
+	&& pretty_print "John the Ripper installed!" "+" && rm -rf /opt/JohnJumbo &
 
 cd /opt/RsaCtfTool
-pip3 install -r requirements.txt 
+pip3 install -r requirements.txt --quiet 
 ln -sf /opt/RsaCtfTool/RsaCtfTool.py /usr/local/sbin/RsaCtfTool.py 
 
-echo "[+] Installing pwntools"
-pip install -q pwntools && echo "[*] pwntools installed!" &
+pretty_print "Installing pwntools for Python2 and Python3" "*"
+pip install --upgrade git+https://github.com/Gallopsled/pwntools.git --quiet
+pip3 install --upgrade git+https://github.com/Gallopsled/pwntools.git@dev3 --quiet
+pretty_print "pwntools for Python2 and Python3 installed!" "+"
 
-echo "[+] Installing python-paddingoracle API"
-cd /opt/python-poodle
-python2 setup.py install && echo "[*] python-paddingoracle installed!" &
+#pretty_print "Installing python-paddingoracle API" "*"
+#cd /opt/python-poodle
+#python2 setup.py install && pretty_print "python-paddingoracle installed!" "+" &
 
-echo "[+] Installing Empire"
+pretty_print "Installing Empire" "*"
 cd /opt/Empire
-echo | setup/install.sh && echo "[*] Empire installed!" &
+echo | setup/install.sh &>/dev/null && pretty_print "Empire installed!" "+" &
 
 cd /opt/onesixtyone
 make && ln -sf /opt/onesixtyone/onesixtyone /usr/local/sbin/onesixtyone & 
 
 cd /opt/gobuster
-go get && go build -o /usr/bin/gobuster && rm -rf /opt/gobuster &
+go get && go build -o /usr/bin/gobuster && rm -rf /opt/gobuster \
+	&& pretty_print "GoBuster installed" "+" &
 
-echo "[+] Installing and configuring Covenant Docker container"
+pretty_print "Installing and configuring Covenant Docker container" "*"
 cd /opt/Covenant/Covenant
-docker build -t covenant . && echo "[*] Covenant installed"
+docker build -t covenant . &>/dev/null  && pretty_print "Covenant installed" "+"
 
-echo "[x] Installing smbmap from source"
-cd /opt/smbmap && pip3 install -r requirements.txt 
+pretty_print "Installing smbmap from source" "*"
+cd /opt/smbmap && pip3 install -r requirements.txt --quiet
 ln -s /opt/smbmap/smbmap.py /usr/bin/smbmap 
 
-echo "[x] Installing nodejs from source"
+pretty_print "Installing CrackMapExec from source" "*"
+#cd /opt && git clone --quiet --recursive https://github.com/byt3bl33d3r/CrackMapExec \
+cd /opt/CrackMapExec && pip install -r requirements.txt --quiet \
+	&& python setup.py install &>/dev/null && pretty_print "CrackMapExec Installed" "+"
+
+pretty_print "Installing nodejs from source" "*"
 curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
-apt-get install -y nodejs 
+apt-get -qy install nodejs 
 
-echo "[x] Installig Ropper from source"
-cd /opt/Ropper && pip install -r requirements.txt 
-python setup.py install 
+pretty_print "Installig Ropper from source" "*"
+cd /opt/Ropper && pip install -r requirements.txt --quiet
+python setup.py install &>/dev/null
 
-echo "[+] Adding custom aliases..."
+pretty_print "Adding custom aliases..." "*"
 echo "alias ll='ls -alh'" >> $HOME/.bashrc
 
 sed -i '/mibs/s/^/#/g' /etc/snmp/snmp.conf
 echo "source $HOME/peda/peda.py" >> $HOME/.gdbinit
 
-echo "[x] Reinstalling Sparta, CrackMapExec, and enum4linux"
-apt install crackmapexec sparta enum4linux -y 
+pretty_print "Reinstalling Sparta, CrackMapExec, and enum4linux" "*"
+apt-get -qy install sparta enum4linux
 
-echo "[-] Removing broken Impacket preinstalled on Kali"
-pip uninstall impacket -y 
-echo "[+] Installing Impacket"
+pretty_print "Removing broken Impacket preinstalled on Kali" "*"
+pip uninstall impacket -y --quiet
+pretty_print "Installing Impacket" "*"
 cd /opt/Impacket
-pip install -q -r requirements.txt 
-python setup.py install && echo "[*] Impacket installed!" &
+pip install -r requirements.txt --quiet
+python setup.py install &>/dev/null && pretty_print "Impacket installed!" "+" &
 
 #echo "[*] Setting Burp's Java to 8 for compatibility"
 #echo "2" | update-alternatives --config java >/dev/null
 
-echo "[+] Customizing vim and tmux..."
+pretty_print "Customizing vim and tmux..." "*"
 rm $HOME/.vimrc 2>/dev/null 
 ln -s $HOME/.vim/.vimrc $HOME/.vimrc
 rm $HOME/.tmux.conf 2>/dev/null
@@ -184,7 +215,7 @@ __EOF__
 chmod +x $HOME/initialize-pureftpd.sh
 
 
-echo "[+] Generating ssh key..."
+pretty_print "Generating ssh key..." "*" 
 rm -rf $HOME/.ssh
 cat /dev/zero | ssh-keygen -t rsa -b 2048 -q -N '' -f $HOME/.ssh/id_rsa
 
@@ -205,7 +236,7 @@ VBoxClient --draganddrop
 __EOF__
 chmod +x $HOME/fixCopyPasteVB.sh
 
-echo "[*] Waiting for background processes to complete..."
+pretty_print "Waiting for background processes to complete..." 
 wait
-echo "[*] Done! Don't forget to change the root password!"
-echo "[!] Note: curl may have issues with older ssl ciphers. If so try installing libssl-dev"
+pretty_print "Done! Don't forget to change the root password!" "!"
+pretty_print "Note: curl may have issues with older ssl ciphers. If so try installing libssl-dev" "!"
