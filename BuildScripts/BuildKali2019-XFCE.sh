@@ -165,7 +165,8 @@ cd /opt/CrackMapExec && pip install -r requirements.txt --quiet \
 
 pretty_print "Installing nodejs from source" "*"
 curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
-apt-get -qy install nodejs 
+lock_check
+apt-get -qy install nodejs &>/dev/null
 
 pretty_print "Installig Ropper from source" "*"
 cd /opt/Ropper && pip install -r requirements.txt --quiet
@@ -178,6 +179,7 @@ sed -i '/mibs/s/^/#/g' /etc/snmp/snmp.conf
 echo "source $HOME/peda/peda.py" >> $HOME/.gdbinit
 
 pretty_print "Reinstalling Sparta, CrackMapExec, and enum4linux" "*"
+lock_check
 apt-get -qy install sparta enum4linux
 
 pretty_print "Removing broken Impacket preinstalled on Kali" "*"
