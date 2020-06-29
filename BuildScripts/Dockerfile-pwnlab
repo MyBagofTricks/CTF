@@ -28,17 +28,17 @@ gdb python3 python3-pip wget git make procps libpcre3-dev libdb-dev \
 libxt-dev libxaw7-dev python tmux bison flex libssl-dev pkg-config \
 unzip libffi-dev libgcrypt20 libgnutls30 nodejs && \
 curl -sSL https://github.com/hugsy/gef/raw/master/scripts/gef.sh | sh && \
-curl -sL https://deb.nodesource.com/setup_14.x | bash  && apt update 
-RUN apt install -qy libgcrypt20 libgnutls30 nodejs && \ 
+curl -sL https://deb.nodesource.com/setup_14.x | bash  && apt update && \
+apt install -qy libgcrypt20 libgnutls30 nodejs && \ 
 apt autoremove -y && \
 cd /tools && git clone https://github.com/Kitware/CMake.git && \
 cd CMake* && ./configure && make  && make install && cd /tools && rm -rf /tools/CMake* && \
 curl -sSL https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb | bash && \
 pip3 install --upgrade pwntools --quiet && \
-git clone https://github.com/volatilityfoundation/volatility3.git /tools/volatility --quiet 
-RUN cd /tools/volatility && python3 setup.py install && \
-pip3 install pynacl capstone keystone-engine requests r2pipe
-RUN git clone https://github.com/radare/radare2 /tools/radare2 --quiet && cd /tools/radare2 && \
+git clone https://github.com/volatilityfoundation/volatility3.git /tools/volatility --quiet && \
+cd /tools/volatility && python3 setup.py install && \
+pip3 install pynacl capstone keystone-engine requests r2pipe && \
+git clone https://github.com/radare/radare2 /tools/radare2 --quiet && cd /tools/radare2 && \
 sys/install.sh && r2pm init && r2pm -gi r2dec retdec r2retdec && \
 r2pm -gi r2ghidra-dec && \
 git clone https://github.com/MyBagofTricks/vimconfig.git ~/.vim --quiet && \
