@@ -1,36 +1,47 @@
 # Basic RE Box Dockerfile
 # Loosely based on: https://gist.github.com/LiveOverflow/b4502c5358a838d7ca9d92e8a2e8b5a0
-# Notable additions:
-# - pwntools w/ Python3
-# - gef
-# - r2 w/ r2ghidra-dec, r2dec
-# - updated CMake
-# - vim/tmux bindings
-# - Metasploit
-# Build: sudo docker build -t ubuntu18:pwnlab - < Dockerfile-pwnlab
-# Run: sudo docker run -d --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined -p 22:22 -p 80:80  -i ubuntu18:pwnlab
-# Shell: sudo docker exec -it <DOCKERID> /bin/bash
-# Note: Running this container with "--cap-add=SYS_PTRACE --security-opt seccomp=unconfined" is a security risk, but
-# useful when developing exploits.  
-FROM ubuntu:18.04
+# - Notable additions:
+# -- Tools: gef, radare2 w/ decompilers, Metasploit
+# -- Libraries: latest CMake, pwntools, gdb
+# -- Tweaks: misc vim/tmux bindings plugins
+# - Build the Docker environment: sudo docker build -t ubuntu:pwnlab - < Dockerfile-pwnlab
+# Launch the Docker environment
+# - Option 1: Launch basic environment 
+# -- Run and launch: sudo docker run -it -v $PWD:/pwd -p 2222:22 ubuntu:pwnlab 
+# -- Maps the current directory to /pwd inside the guest
+# -- Maps port 2222 on the host to 22 on the guest
+# - Option 2: Launch exploit dev environment: 
+# -- Run: sudo docker run -d --rm -v $PWD:/pwd --cap-add=SYS_PTRACE --security-opt seccomp=unconfined --privileged -p 2222:22 -i ubuntu:pwnlab
+# -- Launch: sudo docker exec -it <DOCKER_ID_FROM_RUN_CMD> /bin/bash
+# -- Allow for process tracing via ptrace
+# -- Relax actions security in the container. Often required for BOF to behave as it would outside of a container
+# -- Maps the current directory to /pwd inside the guest 
+# -- Forwards port 22 to the host on 2222
+FROM ubuntu:20.04
 ENV LC_CTYPE C.UTF-8
-RUN dpkg --add-architecture i386 && \
-mkdir -p /tools && apt-get update && \
-apt-get install -y strace ltrace curl wget gcc net-tools vim gdb python python3 python3-pip wget git make procps libpcre3-dev libdb-dev libxt-dev libxaw7-dev python-pip libc6:i386 libncurses5:i386 libstdc++6:i386 tmux bison flex libssl-dev pkg-config && \
-(wget -q -O- https://github.com/hugsy/gef/raw/master/scripts/gef.sh | sh) && \
-cd /tools && wget https://github.com/Kitware/CMake/releases/download/v3.16.0-rc1/cmake-3.16.0-rc1.tar.gz && \
-tar xzf cmake-3.16.0-rc1.tar.gz && \
-cd cmake* && ./configure && make  && make install && cd /tools && rm -rf /tools/cmake* && \
-pip install capstone filebytes keystone-engine requests pwn r2pipe && \
-git clone https://github.com/radare/radare2 /tools/radare2 && \
-/tools/radare2/sys/install.sh && r2pm init && r2pm -i r2ghidra-dec r2dec && \
-git clone --single-branch --branch dev3 https://github.com/Gallopsled/pwntools /tools/pwntools && \
-cd /tools/pwntools && pip3 install -r requirements.txt && pip3 install --upgrade --editable /tools/pwntools && \
-curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall && \
-chmod 755 msfinstall && ./msfinstall && rm -rf msfinstall && \
-git clone https://github.com/volatilityfoundation/volatility.git /tools/volatility && \
-cd /tools/volatility && python2 setup.py install && \
-git clone https://github.com/MyBagofTricks/vimconfig.git ~/.vim && \
+ARG DEBIAN_FRONTEND=noninteractive
+RUN mkdir -p /tools && \
+dpkg --add-architecture i386 && \
+apt-get -qq update && \
+apt-get install -qy strace ltrace curl gcc net-tools vim-nox \
+gdb python3 python3-pip wget git make procps libpcre3-dev libdb-dev \
+libxt-dev libxaw7-dev python tmux bison flex libssl-dev pkg-config \
+unzip libffi-dev libgcrypt20 libgnutls30 nodejs && \
+curl -sSL https://github.com/hugsy/gef/raw/master/scripts/gef.sh | sh && \
+curl -sL https://deb.nodesource.com/setup_14.x | bash  && apt update 
+RUN apt install -qy libgcrypt20 libgnutls30 nodejs && \ 
+apt autoremove -y && \
+cd /tools && git clone https://github.com/Kitware/CMake.git && \
+cd CMake* && ./configure && make  && make install && cd /tools && rm -rf /tools/CMake* && \
+curl -sSL https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb | bash && \
+pip3 install --upgrade pwntools --quiet && \
+git clone https://github.com/volatilityfoundation/volatility3.git /tools/volatility --quiet 
+RUN cd /tools/volatility && python3 setup.py install && \
+pip3 install pynacl capstone keystone-engine requests r2pipe
+RUN git clone https://github.com/radare/radare2 /tools/radare2 --quiet && cd /tools/radare2 && \
+sys/install.sh && r2pm init && r2pm -gi r2dec retdec r2retdec && \
+r2pm -gi r2ghidra-dec && \
+git clone https://github.com/MyBagofTricks/vimconfig.git ~/.vim --quiet && \
 rm -rf /var/lib/apt/lists/* && apt-get clean && \ 
 ln -s ~/.vim/.vimrc ~/.vimrc && ln -s ~/.vim/.tmux.conf ~/.tmux.conf && \
 vim +'PlugUpdate --sync' +qall && echo "alias ll='ls -alh'" >> $HOME/.bashrc
