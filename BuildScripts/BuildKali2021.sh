@@ -32,23 +32,25 @@ declare -A gitlist=(
 ["https://github.com/rebootuser/LinEnum.git"]="/opt/LinEnum"
 ["https://github.com/trailofbits/onesixtyone.git"]="/opt/onesixtyone"
 ["https://github.com/rasta-mouse/Sherlock.git"]="/opt/Sherlock"
-["https://github.com/SecWiki/windows-kernel-exploits.git"]="/opt/windows-kernel-exploits"
-["https://github.com/M4ximuss/Powerless.git"]="/opt/Powerless"
-["https://github.com/swisskyrepo/PayloadsAllTheThings.git"]="/opt/PayloadAllTheThings"
-["https://github.com/andrew-d/static-binaries.git"]="/opt/static-binaries"
-["https://github.com/sleventyeleven/linuxprivchecker.git"]="/opt/linuxprivchecker"
-["https://github.com/mzet-/linux-exploit-suggester.git"]="/opt/linux-exploit-suggster"
-["https://github.com/FuzzySecurity/PowerShell-Suite.git"]="/opt/Powershell-Suite"
-["https://github.com/stephenbradshaw/python-paddingoracle.git"]="/opt/python-poodle"
-["https://github.com/diego-treitos/linux-smart-enumeration.git"]="/opt/linux-smart-enum"
-["https://github.com/ShawnDEvans/smbmap.git"]="/opt/smbmap"
-["https://github.com/jpillora/chisel.git"]="/opt/chisel"
-["https://github.com/Ganapati/RsaCtfTool.git"]="/opt/RsaCtfTool"
-["https://github.com/OJ/gobuster.git"]="/opt/gobuster"
-["https://github.com/sashs/Ropper.git"]="/opt/Ropper"
-["https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite.git"]="/opt/peass"
+["https://github.com/SecWiki/windows-kernel-exploits.git"]="/opt/windows-kernel-exploits"                                                                       
+["https://github.com/M4ximuss/Powerless.git"]="/opt/Powerless"                                                                                                  
+["https://github.com/swisskyrepo/PayloadsAllTheThings.git"]="/opt/PayloadAllTheThings"                                                                          
+["https://github.com/andrew-d/static-binaries.git"]="/opt/static-binaries"                                                                                      
+["https://github.com/sleventyeleven/linuxprivchecker.git"]="/opt/linuxprivchecker"                                                                              
+["https://github.com/mzet-/linux-exploit-suggester.git"]="/opt/linux-exploit-suggster"                                                                          
+["https://github.com/FuzzySecurity/PowerShell-Suite.git"]="/opt/Powershell-Suite"                                                                               
+["https://github.com/stephenbradshaw/python-paddingoracle.git"]="/opt/python-poodle"                                                                            
+["https://github.com/diego-treitos/linux-smart-enumeration.git"]="/opt/linux-smart-enum"                                                                        
+["https://github.com/ShawnDEvans/smbmap.git"]="/opt/smbmap"                                                                                                     
+["https://github.com/jpillora/chisel.git"]="/opt/chisel"                                                                                                        
+["https://github.com/Ganapati/RsaCtfTool.git"]="/opt/RsaCtfTool"                                                                                                
+["https://github.com/OJ/gobuster.git"]="/opt/gobuster"                                                                                                          
+["https://github.com/sashs/Ropper.git"]="/opt/Ropper"                                                                                                           
+["https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite.git"]="/opt/peass"                                                                  
 ["https://github.com/longld/peda.git"]="$USER_HOME/peda"
 ["https://github.com/MyBagofTricks/vimconfig.git"]="$USER_HOME/.vim"
+["https://github.com/m4ll0k/SecretFinder.git"]="/opt/SecretsFinder"
+["https://github.com/Greenwolf/ntlm_theft.git"]="/opt/ntlmthief"
 )
 
 pretty_print() {                               
@@ -67,7 +69,7 @@ pretty_print() {
 lock_check() {
     i=0 
     while fuser /var/lib/dpkg/lock &>/dev/null; do
-	    echo -ne "\r[!] Waiting for apt lock. If this persists, kill it or reboot. $i sec elapsed..."
+            echo -ne "\r[!] Waiting for apt lock. If this persists, kill it or reboot. $i sec elapsed..."
         sleep 1
         ((i++)) 
     done
@@ -96,32 +98,32 @@ wait
 
 # Install Python2-pip
 curl -sL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py \
-	&& python2 /tmp/get-pip.py &>/dev/null
+        && python2 /tmp/get-pip.py &>/dev/null
 
 curl -sL https://github.com/radareorg/cutter/releases/download/v1.10.1/Cutter-v1.10.1-x64.Linux.AppImage -o /usr/local/bin/Cutter \
-	&& chmod +x /usr/local/bin/Cutter && pretty_print "Cutter installed" "+" &
+        && chmod +x /usr/local/bin/Cutter && pretty_print "Cutter installed" "+" &
 
 curl -sL https://ghidra-sre.org/ghidra_9.2.2_PUBLIC_20201229.zip -o /opt/ghidra_9.1_PUBLIC_20191023.zip ; cd /opt; unzip ghidra_9.1_PUBLIC_20191023.zip &>/dev/null ; rm ghidra_9.1_PUBLIC_20191023.zip \
-	&& ln -sf /opt/ghidra_9.1_PUBLIC/ghidraRun /usr/local/bin/ghidraRun \
+        && ln -sf /opt/ghidra_9.1_PUBLIC/ghidraRun /usr/local/bin/ghidraRun \
         && pretty_print "Ghidra installed!" "+" &
 
 # Build packages downloaded in previous step here
 lock_check
 pretty_print "Installing radare2 from source" "*"
 cd /opt/radare2 && make purge;  sys/install.sh &>/dev/null \
-	&& pretty_print "radare2 installed!" "+"
+        && pretty_print "radare2 installed!" "+"
 
 pretty_print "Installing r2ghidara + r2dec" "*"
 r2pm init && r2pm update; r2pm -gi r2ghidra &>/dev/null \
-	&& pretty_print "radare2 w/ r2ghidra installed from source!" "+" &
+        && pretty_print "radare2 w/ r2ghidra installed from source!" "+" &
 
 pretty_print "Installing the latest version of Metasploit" "*"
 curl -sL https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb | bash \
-	&& pretty_print "Metasploit installed successfully!" "+" &
+        && pretty_print "Metasploit installed successfully!" "+" &
 
 pretty_print "Installing John the Ripper Community Edition" "*"
 cd /opt/JohnJumbo/src && ./configure &>/dev/null && make &>/dev/null \
-	&& make install &>/dev/null && pretty_print "John the Ripper installed!" "+" && rm -rf /opt/JohnJumbo &
+        && make install &>/dev/null && pretty_print "John the Ripper installed!" "+" && rm -rf /opt/JohnJumbo &
 
 cd /opt/RsaCtfTool
 pip3 install -r requirements.txt --quiet 
@@ -140,7 +142,7 @@ make && ln -sf /opt/onesixtyone/onesixtyone /usr/local/bin/onesixtyone &
 
 cd /opt/gobuster
 go get && go build -o /usr/bin/gobuster && rm -rf /opt/gobuster \
-	&& pretty_print "GoBuster installed" "+" &
+        && pretty_print "GoBuster installed" "+" &
 
 pretty_print "Installing and configuring Covenant Docker container" "*"
 cd /opt/Covenant/Covenant
@@ -236,6 +238,3 @@ if [[ ${response,,} != "n" ]]; then
     cp -r "$USER_HOME/.vim" /root/.vim
     cp $USER_HOME/initialize-pureftpd.sh /root
 fi
-
-
-
